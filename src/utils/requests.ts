@@ -8,7 +8,7 @@ import {
 } from "./types"
 import mockData from "../mock-data.json"
 
-const TRANSACTIONS_PER_PAGE = 5
+
 
 const data: { employees: Employee[]; transactions: Transaction[] } = {
   employees: mockData.employees,
@@ -20,12 +20,13 @@ export const getEmployees = (): Employee[] => data.employees
 export const getTransactionsPaginated = ({
   page,
 }: PaginatedRequestParams): PaginatedResponse<Transaction[]> => {
+  const transactionsPerPage = parseInt(process.env.REACT_APP_TRANSACTIONS_PER_PAGE || "5") 
   if (page === null) {
     throw new Error("Page cannot be null")
   }
 
-  const start = page * TRANSACTIONS_PER_PAGE
-  const end = start + TRANSACTIONS_PER_PAGE
+  const start = page * transactionsPerPage
+  const end = start + transactionsPerPage
 
   if (start > data.transactions.length) {
     throw new Error(`Invalid page ${page}`)
@@ -35,13 +36,13 @@ export const getTransactionsPaginated = ({
 
   return {
     nextPage,
-    data: data.transactions.slice(start, end),
+    data: data.transactions.slice(0, end),
   }
 }
 
 export const getTransactionsByEmployee = ({ employeeId }: RequestByEmployeeParams) => {
   if (!employeeId) {
-    throw new Error("Employee id cannot be empty")
+    return data.transactions;
   }
 
   return data.transactions.filter((transaction) => transaction.employee.id === employeeId)
