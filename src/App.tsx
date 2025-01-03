@@ -9,8 +9,9 @@ import { EMPTY_EMPLOYEE } from "./utils/constants"
 import { Employee } from "./utils/types"
 
 export function App() {
+  const [employeeId, setEmployeeId] = useState(String)
   const { data: employees, ...employeeUtils } = useEmployees()
-  const { data: paginatedTransactions, ...paginatedTransactionsUtils } = usePaginatedTransactions()
+  const { data: paginatedTransactions, ...paginatedTransactionsUtils } = usePaginatedTransactions(employeeId)
   const { data: transactionsByEmployee, ...transactionsByEmployeeUtils } = useTransactionsByEmployee()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -64,7 +65,10 @@ export function App() {
             if (newValue === null) {
               return
             }
-
+            if (newValue === EMPTY_EMPLOYEE) {
+              return loadAllTransactions()
+            }
+            setEmployeeId(newValue.id)
             await loadTransactionsByEmployee(newValue.id)
           }}
         />

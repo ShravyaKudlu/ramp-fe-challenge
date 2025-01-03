@@ -3,7 +3,7 @@ import { PaginatedRequestParams, PaginatedResponse, Transaction } from "../utils
 import { PaginatedTransactionsResult } from "./types"
 import { useCustomFetch } from "./useCustomFetch"
 
-export function usePaginatedTransactions(): PaginatedTransactionsResult {
+export function usePaginatedTransactions(employeeId: String | null): PaginatedTransactionsResult {
   const { fetchWithCache, loading } = useCustomFetch()
   const [paginatedTransactions, setPaginatedTransactions] = useState<PaginatedResponse<
     Transaction[]
