@@ -1,31 +1,38 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import { PaginatedRequestParams, PaginatedResponse, Transaction } from "../utils/types"
 import { PaginatedTransactionsResult } from "./types"
 import { useCustomFetch } from "./useCustomFetch"
 
-export function usePaginatedTransactions(employeeId: String | null): PaginatedTransactionsResult {
+export function usePaginatedTransactions(employeeId: string | null, currentPage: number): PaginatedTransactionsResult {
   const { fetchWithCache, loading } = useCustomFetch()
-  const [paginatedTransactions, setPaginatedTransactions] = useState<PaginatedResponse<
-    Transaction[]
-  > | null>(null)
+  const [paginatedTransactions, setPaginatedTransactions] = useState<PaginatedResponse<Transaction[]> | null>(null)
 
+  // Fetch transactions whenever employeeId or currentPage changes
+  useEffect(() => {
+    fetchAll() // Re-fetch whenever employeeId or currentPage changes
+  }, [employeeId, currentPage])
+
+  // Fetch paginated transactions
   const fetchAll = useCallback(async () => {
-    const response = await fetchWithCache<PaginatedResponse<Transaction[]>, PaginatedRequestParams>(
+    const params: PaginatedRequestParams & { employeeId?: string } = {
+      page: currentPage, // Use currentPage for pagination
+    }
+
+    // If employeeId is provided, include it in the params
+    if (employeeId) {
+      params.employeeId = employeeId
+    }
+
+    const response = await fetchWithCache<PaginatedResponse<Transaction[]>, PaginatedRequestParams & { employeeId?: string }>(
       "paginatedTransactions",
-      {
-        page: paginatedTransactions === null ? 0 : paginatedTransactions.nextPage,
-      }
+      params
     )
 
-    setPaginatedTransactions((previousResponse) => {
-      if (response === null || previousResponse === null) {
-        return response
-      }
+    // Update state with the response
+    setPaginatedTransactions(response)
+  }, [fetchWithCache, employeeId, currentPage])
 
-      return { data: response.data, nextPage: response.nextPage }
-    })
-  }, [fetchWithCache, paginatedTransactions])
-
+  // Invalidate the cached data when needed
   const invalidateData = useCallback(() => {
     setPaginatedTransactions(null)
   }, [])

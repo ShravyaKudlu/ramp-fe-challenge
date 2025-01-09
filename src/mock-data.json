@@ -198,6 +198,45 @@
       "merchant": "Tasty Restaurant",
       "date": "8/3/2022",
       "approved": false
+    },
+    {
+      "id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+      "amount": 150.75,
+      "employee": {
+        "id": "89bd9324-04e0-4cd6-aa27-981508bd219f",
+        "firstName": "James",
+        "lastName": "Smith",
+        "extras": 2
+      },
+      "merchant": "Tech Supplies",
+      "date": "8/7/2022",
+      "approved": true
+    },
+    {
+      "id": "b2c3d4e5-6789-01ab-cdef-2345678901bc",
+      "amount": 320.50,
+      "employee": {
+        "id": "7eeba422-5717-4026-8e74-e517576e26bd",
+        "firstName": "Mary",
+        "lastName": "Miller",
+        "extras": 1
+      },
+      "merchant": "Office Supplies",
+      "date": "8/8/2022",
+      "approved": false
+    },
+    {
+      "id": "c3d4e5f6-7890-12ab-cdef-3456789012cd",
+      "amount": 210.30,
+      "employee": {
+        "id": "6e88529c-6739-4f1b-bea0-02afdd336bb3",
+        "firstName": "Linda",
+        "lastName": "Jones",
+        "extras": 3
+      },
+      "merchant": "Travel Agency",
+      "date": "8/9/2022",
+      "approved": true
     }
   ]
 }

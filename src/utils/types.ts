@@ -23,7 +23,7 @@ export type PaginatedRequestParams = {
 }
 
 export type RequestByEmployeeParams = {
-  employeeId: string
+  employeeId?: string
 }
 
 export type SetTransactionApprovalParams = {

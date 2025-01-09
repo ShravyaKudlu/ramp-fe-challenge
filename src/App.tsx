@@ -4,43 +4,52 @@ import { Instructions } from "./components/Instructions"
 import { Transactions } from "./components/Transactions"
 import { useEmployees } from "./hooks/useEmployees"
 import { usePaginatedTransactions } from "./hooks/usePaginatedTransactions"
-import { useTransactionsByEmployee } from "./hooks/useTransactionsByEmployee"
 import { EMPTY_EMPLOYEE } from "./utils/constants"
 import { Employee } from "./utils/types"
 
 export function App() {
-  const [employeeId, setEmployeeId] = useState(String)
+  const [employeeId, setEmployeeId] = useState<string | null>(null) // Employee id (can be null if no filter)
+  const [currentPage, setCurrentPage] = useState<number>(0) // Track the current page for pagination
+
   const { data: employees, ...employeeUtils } = useEmployees()
-  const { data: paginatedTransactions, ...paginatedTransactionsUtils } = usePaginatedTransactions(employeeId)
-  const { data: transactionsByEmployee, ...transactionsByEmployeeUtils } = useTransactionsByEmployee()
+  const { data: paginatedTransactions, ...paginatedTransactionsUtils } = usePaginatedTransactions(employeeId, currentPage)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Use memoization to choose transactions from either paginated or employee-filtered
   const transactions = useMemo(
-    () => paginatedTransactions?.data ?? transactionsByEmployee ?? null,
-    [paginatedTransactions, transactionsByEmployee]
+    () => paginatedTransactions?.data ?? null,
+    [paginatedTransactions]
   )
 
+  // Load all transactions when employee or pagination changes
   const loadAllTransactions = useCallback(async () => {
     setIsLoading(true)
-    transactionsByEmployeeUtils.invalidateData()
-
-    await employeeUtils.fetchAll()
-    await paginatedTransactionsUtils.fetchAll()
-
+    await employeeUtils.fetchAll() // Fetch employees
+    await paginatedTransactionsUtils.fetchAll() // Fetch transactions for current page
     setIsLoading(false)
-  }, [employeeUtils, paginatedTransactionsUtils, transactionsByEmployeeUtils])
+  }, [employeeUtils, paginatedTransactionsUtils])
 
+  // Handle the pagination "View More" button
+  const loadNextPage = useCallback(async () => {
+    if (paginatedTransactions?.nextPage !== null) {
+      setCurrentPage(prevPage => prevPage + 1) // Increment the current page
+      await paginatedTransactionsUtils.fetchAll() // Fetch the next page of transactions
+    }
+  }, [paginatedTransactions, paginatedTransactionsUtils])
+
+  // Reset pagination when employee changes
   const loadTransactionsByEmployee = useCallback(
     async (employeeId: string) => {
-      paginatedTransactionsUtils.invalidateData()
-      await transactionsByEmployeeUtils.fetchById(employeeId)
+      setCurrentPage(0) // Reset to page 0 when switching employees
+      setEmployeeId(employeeId) // Set the new employee id
     },
-    [paginatedTransactionsUtils, transactionsByEmployeeUtils]
+    []
   )
 
+  // Effect to load data if employees are null and not loading
   useEffect(() => {
     if (employees === null && !employeeUtils.loading) {
-      loadAllTransactions()
+      loadAllTransactions() // Load all transactions if employees are not available
     }
   }, [employeeUtils.loading, employees, loadAllTransactions])
 
@@ -51,6 +60,7 @@ export function App() {
 
         <hr className="RampBreak--l" />
 
+        {/* Input to filter transactions by employee */}
         <InputSelect<Employee>
           isLoading={isLoading}
           defaultValue={EMPTY_EMPLOYEE}
@@ -66,16 +76,17 @@ export function App() {
               return
             }
             if (newValue === EMPTY_EMPLOYEE) {
-              return loadAllTransactions()
+              setEmployeeId(null) // Clear employeeId to show all transactions
+              return loadAllTransactions() // Reload all transactions
             }
-            setEmployeeId(newValue.id)
-            await loadTransactionsByEmployee(newValue.id)
+            await loadTransactionsByEmployee(newValue.id) // Load transactions by employee
           }}
         />
 
         <div className="RampBreak--l" />
 
         <div className="RampGrid">
+          {/* Display the transactions */}
           <Transactions transactions={transactions} />
 
           {transactions !== null && (
@@ -83,7 +94,7 @@ export function App() {
               className="RampButton"
               disabled={paginatedTransactionsUtils.loading || !paginatedTransactions?.nextPage}
               onClick={async () => {
-                await loadAllTransactions()
+                await loadNextPage() // Load the next page when clicked
               }}
             >
               View More
