@@ -8,48 +8,44 @@ import { EMPTY_EMPLOYEE } from "./utils/constants"
 import { Employee } from "./utils/types"
 
 export function App() {
-  const [employeeId, setEmployeeId] = useState<string | null>(null) // Employee id (can be null if no filter)
-  const [currentPage, setCurrentPage] = useState<number>(0) // Track the current page for pagination
+  const [employeeId, setEmployeeId] = useState<string | null>(null) 
+  const [currentPage, setCurrentPage] = useState<number>(0) 
 
   const { data: employees, ...employeeUtils } = useEmployees()
   const { data: paginatedTransactions, ...paginatedTransactionsUtils } = usePaginatedTransactions(employeeId, currentPage)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Use memoization to choose transactions from either paginated or employee-filtered
   const transactions = useMemo(
     () => paginatedTransactions?.data ?? null,
     [paginatedTransactions]
   )
 
-  // Load all transactions when employee or pagination changes
   const loadAllTransactions = useCallback(async () => {
     setIsLoading(true)
-    await employeeUtils.fetchAll() // Fetch employees
-    await paginatedTransactionsUtils.fetchAll() // Fetch transactions for current page
+    await employeeUtils.fetchAll() 
+    await paginatedTransactionsUtils.fetchAll() 
     setIsLoading(false)
   }, [employeeUtils, paginatedTransactionsUtils])
 
-  // Handle the pagination "View More" button
   const loadNextPage = useCallback(async () => {
     if (paginatedTransactions?.nextPage !== null) {
-      setCurrentPage(prevPage => prevPage + 1) // Increment the current page
-      await paginatedTransactionsUtils.fetchAll() // Fetch the next page of transactions
+      setCurrentPage(prevPage => prevPage + 1) 
+      await paginatedTransactionsUtils.fetchAll() 
     }
   }, [paginatedTransactions, paginatedTransactionsUtils])
 
-  // Reset pagination when employee changes
   const loadTransactionsByEmployee = useCallback(
     async (employeeId: string) => {
-      setCurrentPage(0) // Reset to page 0 when switching employees
-      setEmployeeId(employeeId) // Set the new employee id
+      setCurrentPage(0) 
+      setEmployeeId(employeeId) 
     },
     []
   )
 
-  // Effect to load data if employees are null and not loading
+  
   useEffect(() => {
     if (employees === null && !employeeUtils.loading) {
-      loadAllTransactions() // Load all transactions if employees are not available
+      loadAllTransactions() 
     }
   }, [employeeUtils.loading, employees, loadAllTransactions])
 
@@ -76,10 +72,10 @@ export function App() {
               return
             }
             if (newValue === EMPTY_EMPLOYEE) {
-              setEmployeeId(null) // Clear employeeId to show all transactions
-              return loadAllTransactions() // Reload all transactions
+              setEmployeeId(null) 
+              return loadAllTransactions() 
             }
-            await loadTransactionsByEmployee(newValue.id) // Load transactions by employee
+            await loadTransactionsByEmployee(newValue.id) 
           }}
         />
 
@@ -94,7 +90,7 @@ export function App() {
               className="RampButton"
               disabled={paginatedTransactionsUtils.loading || !paginatedTransactions?.nextPage}
               onClick={async () => {
-                await loadNextPage() // Load the next page when clicked
+                await loadNextPage() 
               }}
             >
               View More

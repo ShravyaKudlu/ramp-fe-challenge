@@ -13,20 +13,20 @@ const data: { employees: Employee[]; transactions: Transaction[] } = {
   transactions: mockData.transactions,
 };
 
-// Get all employees
+
 export const getEmployees = (): Employee[] => data.employees;
 
-// Get transactions with pagination
+
 export const getTransactionsPaginated = ({
   page,
-  employeeId, // Added employeeId as a parameter here
+  employeeId, 
 }: PaginatedRequestParams & RequestByEmployeeParams): PaginatedResponse<Transaction[]> => {
   const transactionsPerPage = parseInt(process.env.REACT_APP_TRANSACTIONS_PER_PAGE || "5");
   if (page === null) {
     throw new Error("Page cannot be null");
   }
 
-  // If employeeId is provided, filter transactions by employee
+  
   let filteredTransactions = data.transactions;
   if (employeeId) {
     filteredTransactions = getTransactionsByEmployee({ employeeId });
@@ -43,7 +43,7 @@ export const getTransactionsPaginated = ({
 
   return {
     nextPage,
-    data: filteredTransactions.slice(0, end), // Correct slice range
+    data: filteredTransactions.slice(0, end), 
   };
 };
 
@@ -58,7 +58,7 @@ export const getTransactionsByEmployee = ({
   return data.transactions.filter((transaction) => transaction.employee.id === employeeId);
 };
 
-// Set the approval status for a specific transaction
+
 export const setTransactionApproval = ({
   transactionId,
   value,
